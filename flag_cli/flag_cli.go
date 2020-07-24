@@ -11,6 +11,11 @@ var slovak bool
 func init() {
 	flag.BoolVar(&slovak, "slovak", false, "Use slovak language.")
 	flag.BoolVar(&slovak, "s", false, "Use slovak language.")
+
+	flag.VisitAll(func(flag *flag.Flag) {
+		format := "\t-%s: %s (Default: '%s')\n"
+		fmt.Printf(format, flag.Name, flag.Usage, flag.DefValue)
+	})
 }
 
 func main() {
