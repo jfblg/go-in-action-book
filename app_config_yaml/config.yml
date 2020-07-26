@@ -1,0 +1,4 @@
+# My first yml configuration
+name: app1
+enabled: true
+path: /etc/app1
