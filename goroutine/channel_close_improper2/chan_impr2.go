@@ -12,7 +12,7 @@ func main() {
 
 	for {
 		select {
-		case <-ch:
+		case <-ch: // when the ch channel is closed a "false" value is received.
 			println("Got message.")
 		case <-until:
 			println("Timeout")
@@ -26,6 +26,6 @@ func main() {
 func send(ch chan bool) {
 	time.Sleep(120 * time.Millisecond)
 	ch <- true
-	close(ch)
+	close(ch) // closed channel always return channles nil value
 	println("Sent and closed")
 }
