@@ -1,0 +1,2 @@
+example 2020/07/31 09:17:03.381223 logger.go:13: Regular message
+example 2020/07/31 09:17:03.381761 logger.go:14: Fatal error
