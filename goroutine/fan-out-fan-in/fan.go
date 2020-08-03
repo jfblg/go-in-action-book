@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -27,16 +29,13 @@ func main() {
 		return valueStr
 	}
 
-	fanIn := func(
-		done <-chan interface,
-		channels ...<-chan interface{},
-	) <-chan interface{} {
+	fanIn := func(done <-chan interface{}, channels ...<-chan interface{}) <-chan interface{} {
 		var wg sync.WaitGroup
 		multiplexedStream := make(chan interface{})
 
-		multiplex := func( c <-chan interface{}) {
+		multiplex := func(c <-chan interface{}) {
 			defer wg.Done()
-			for i:= range c {
+			for i := range c {
 				select {
 				case <-done:
 					return
@@ -58,8 +57,6 @@ func main() {
 		return multiplexedStream
 	}
 
-	
-
 	done := make(chan interface{})
 	defer close(done)
 
@@ -77,7 +74,5 @@ func main() {
 	for prime := range take(done, fanIn(done, finders...), 10) {
 		fmt.Printf("\t%d\n", prime)
 	}
-
-	
 
 }
