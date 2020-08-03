@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"runtime"
 	"sync"
-	"time"
 )
 
 func main() {
@@ -29,7 +28,28 @@ func main() {
 		return valueStr
 	}
 
-	fanIn := func(done <-chan interface{}, channels ...<-chan interface{}) <-chan interface{} {
+	toInt := func(
+		done <-chan interface{},
+		valueStream <-chan interface{},
+	) <-chan int {
+		valueStreamInt := make(chan int)
+		go func() {
+			defer close(valueStreamInt)
+			for v := range valueStream {
+				select {
+				case <-done:
+					return
+				case valueStreamInt <- v.(int):
+				}
+			}
+		}()
+		return valueStreamInt
+	}
+
+	fanIn := func(
+		done <-chan interface{},
+		channels ...<-chan interface{},
+	) <-chan interface{} {
 		var wg sync.WaitGroup
 		multiplexedStream := make(chan interface{})
 
@@ -60,15 +80,13 @@ func main() {
 	done := make(chan interface{})
 	defer close(done)
 
-	start := time.Now()
 	rand := func() interface{} { return rand.Intn(400000) }
 	randIntStream := toInt(done, repeatFn(done, rand))
-	// todo toInt stage
 
 	numFinders := runtime.NumCPU()
 	finders := make([]<-chan int, numFinders)
 	for i := 0; i < numFinders; i++ {
-		finders[i] = primeFinder(done, randIntStream)
+		finders[i] = primeFinder(done, randIntStream) // todo implement primeFinder
 	}
 
 	for prime := range take(done, fanIn(done, finders...), 10) {
